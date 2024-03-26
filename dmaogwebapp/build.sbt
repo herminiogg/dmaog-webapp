@@ -22,5 +22,7 @@ libraryDependencies ++= Seq(
   "org.zeroturnaround" % "zt-zip" % "1.17"
 )
 
+containerPort in Jetty := 8000
+
 enablePlugins(SbtTwirl)
 enablePlugins(JettyPlugin)

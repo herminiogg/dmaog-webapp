@@ -38,39 +38,42 @@ class MyScalatraServlet extends ScalatraServlet with CorsSupport with JacksonJso
     tmpDir.delete()
     tmpDir.mkdir()
 
-    if(conversionType == "ShExML") {
-      new CodeGenerator(Some(shexml), "ShExML", tmpDirPath, "com.example",
-        None, None, None,
-        None, None, None, None, 
-        None, false).generate()
-    } else if(conversionType == "RML") {
-      new CodeGenerator(Some(rdf), "RML", tmpDirPath, "com.example",
-        None, None, None,
-        None, None, None, None, 
-        None, false).generate()
+    if(shexml.contains("IMPORT") || shexml.contains("FUNCTION")) {
+        BadRequest("Functions and/or imports execution are not allowed in this playground due to security reasons")
     } else {
-      val pw = new PrintWriter(tmpDirPath + "/data.ttl")
-      pw.write(rdf)
-      pw.close()
+      if(conversionType == "ShExML") {
+        new CodeGenerator(Some(shexml), "ShExML", tmpDirPath, "com.example",
+          None, None, None,
+          None, None, None, None, 
+          None, false).generate()
+      } else if(conversionType == "RML") {
+        new CodeGenerator(Some(rdf), "RML", tmpDirPath, "com.example",
+          None, None, None,
+          None, None, None, None, 
+          None, false).generate()
+      } else {
+        val pw = new PrintWriter(tmpDirPath + "/data.ttl")
+        pw.write(rdf)
+        pw.close()
 
-      val datafile = tmpDirPath + "/data.ttl"
+        val datafile = tmpDirPath + "/data.ttl"
 
-      new CodeGenerator(None, "", tmpDirPath, "com.example",
-        None, None, None,
-        None, None, None, None, 
-        Some(datafile), false).generate()
+        new CodeGenerator(None, "", tmpDirPath, "com.example",
+          None, None, None,
+          None, None, None, None, 
+          Some(datafile), false).generate()
+      }
+
+      val zipFilePath = "results.zip"
+      new File(zipFilePath).createNewFile()
+      ZipUtil.pack(new File("tmp"), new File(zipFilePath))
+
+      contentType = "application/octet-stream"
+      val file = new File(zipFilePath)
+      response.setHeader("Content-Disposition", "attachment; filename=" + file.getName)
+      file
     }
-
-    val zipFilePath = "results.zip"
-    new File(zipFilePath).createNewFile()
-    ZipUtil.pack(new File("tmp"), new File(zipFilePath))
-
-    contentType = "application/octet-stream"
-    val file = new File(zipFilePath)
-    response.setHeader("Content-Disposition", "attachment; filename=" + file.getName)
-    file
   }
-
 }
 
 case class DMAOGCodeGeneration(conversionType: String, shexml: String, rdf: String)

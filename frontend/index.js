@@ -34,7 +34,7 @@ $("#generateButton").on('click', function() {
         rdf: rdfContent,  
         conversionType: $("#inputType").val(),
     };
-    $.ajax("http://localhost:8080/generateCodeWithDMAOG", {
+    $.ajax("https://dmaog.herminiogarcia.com/dmaogAPI/generateCodeWithDMAOG", {
         "data": JSON.stringify(content),
         "type": "POST",
         "processData": false,
